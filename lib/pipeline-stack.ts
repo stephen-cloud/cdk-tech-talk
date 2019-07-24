@@ -34,7 +34,7 @@ export class PipelineStack extends Stack {
         },
       }),
       environment: {
-        buildImage: LinuxBuildImage.UBUNTU_14_04_NODEJS_8_11_0,
+        buildImage: LinuxBuildImage.UBUNTU_14_04_PYTHON_3_7_1,
       },
     });
     const lambdaBuild = new PipelineProject(this, 'LambdaBuild', {
@@ -47,16 +47,14 @@ export class PipelineStack extends Stack {
           //     'npm install',
           //   ],
           // },
-          build: {
+          // build: {
             // commands: 'npm run build',
-            commands: ['pwd', 'ls'],
-          },
+          // },
         },
         artifacts: {
           'base-directory': 'lambda',
           files: [
-            'index.js',
-            // 'node_modules/**/*',
+            'lambda.py',
           ],
         },
       }),
