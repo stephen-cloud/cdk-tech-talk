@@ -1,5 +1,3 @@
-// file: lib/lambda-stack.ts
-    
 import codedeploy = require('@aws-cdk/aws-codedeploy');
 import lambda = require('@aws-cdk/aws-lambda');
 import { App, Stack, StackProps } from '@aws-cdk/core';

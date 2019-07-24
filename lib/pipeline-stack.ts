@@ -1,26 +1,19 @@
-// lib/pipeline-stack.ts
-
-import codebuild = require('@aws-cdk/aws-codebuild');
-import codecommit = require('@aws-cdk/aws-codecommit');
-import codepipeline = require('@aws-cdk/aws-codepipeline');
-import codepipeline_actions = require('@aws-cdk/aws-codepipeline-actions');
-import lambda = require('@aws-cdk/aws-lambda');
-import s3 = require('@aws-cdk/aws-s3');
-import { App, Stack, StackProps } from '@aws-cdk/core';
+import { App, Stack, StackProps, SecretValue } from '@aws-cdk/core';
+import { PipelineProject, BuildSpec, LinuxBuildImage } from '@aws-cdk/aws-codebuild';
+import { Artifact, Pipeline } from '@aws-cdk/aws-codepipeline';
+import { GitHubSourceAction, CodeBuildAction, CloudFormationCreateUpdateStackAction } from '@aws-cdk/aws-codepipeline-actions';
+import { CfnParametersCode } from '@aws-cdk/aws-lambda';
 
 export interface PipelineStackProps extends StackProps {
-  readonly lambdaCode: lambda.CfnParametersCode;
+  readonly lambdaCode: CfnParametersCode;
 }
 
 export class PipelineStack extends Stack {
   constructor(app: App, id: string, props: PipelineStackProps) {
     super(app, id, props);
 
-    const code = codecommit.Repository.fromRepositoryName(this, 'ImportedRepo',
-      'NameOfYourCodeCommitRepository');
-
-    const cdkBuild = new codebuild.PipelineProject(this, 'CdkBuild', {
-      buildSpec: codebuild.BuildSpec.fromObject({
+    const cdkBuild = new PipelineProject(this, 'CdkBuild', {
+      buildSpec: BuildSpec.fromObject({
         version: '0.2',
         phases: {
           install: {
@@ -41,22 +34,22 @@ export class PipelineStack extends Stack {
         },
       }),
       environment: {
-        buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_8_11_0,
+        buildImage: LinuxBuildImage.UBUNTU_14_04_NODEJS_8_11_0,
       },
     });
-    const lambdaBuild = new codebuild.PipelineProject(this, 'LambdaBuild', {
-      buildSpec: codebuild.BuildSpec.fromObject({
+    const lambdaBuild = new PipelineProject(this, 'LambdaBuild', {
+      buildSpec: BuildSpec.fromObject({
         version: '0.2',
         phases: {
-          install: {
-            commands: [
-              'cd lambda',
-              'npm install',
-            ],
-          },
-          build: {
-            commands: 'npm run build',
-          },
+          // install: {
+          //   commands: [
+          //     'cd lambda',
+          //     'npm install',
+          //   ],
+          // },
+          // build: {
+          //   commands: 'npm run build',
+          // },
         },
         artifacts: {
           'base-directory': 'lambda',
@@ -67,46 +60,49 @@ export class PipelineStack extends Stack {
         },
       }),
       environment: {
-        buildImage: codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_8_11_0,
+        buildImage: LinuxBuildImage.UBUNTU_14_04_NODEJS_8_11_0,
       },
     });
 
-    const sourceOutput = new codepipeline.Artifact();
-    const cdkBuildOutput = new codepipeline.Artifact('CdkBuildOutput');
-    const lambdaBuildOutput = new codepipeline.Artifact('LambdaBuildOutput');
-    new codepipeline.Pipeline(this, 'Pipeline', {
+    const sourceOutput = new Artifact();
+    const cdkBuildOutput = new Artifact('CdkBuildOutput');
+    const lambdaBuildOutput = new Artifact('LambdaBuildOutput');
+    const pat = process.env.PAT || 'nope'
+
+    new Pipeline(this, 'Pipeline', {
       stages: [
         {
           stageName: 'Source',
           actions: [
-            new codepipeline_actions.CodeCommitSourceAction({
-              actionName: 'CodeCommit_Source',
-              repository: code,
+            new GitHubSourceAction({
+              actionName: 'GitHub_Source',
               output: sourceOutput,
+              branch: 'master',
+              owner: 'stephen-cloud',
+              repo: 'cdk-tech-talk',
+              oauthToken: SecretValue.plainText(pat)
             }),
           ],
-        },
-        {
+        }, {
           stageName: 'Build',
           actions: [
-            new codepipeline_actions.CodeBuildAction({
+            new CodeBuildAction({
               actionName: 'Lambda_Build',
               project: lambdaBuild,
               input: sourceOutput,
               outputs: [lambdaBuildOutput],
             }),
-            new codepipeline_actions.CodeBuildAction({
+            new CodeBuildAction({
               actionName: 'CDK_Build',
               project: cdkBuild,
               input: sourceOutput,
               outputs: [cdkBuildOutput],
             }),
           ],
-        },
-        {
+        }, {
           stageName: 'Deploy',
           actions: [
-            new codepipeline_actions.CloudFormationCreateUpdateStackAction({
+            new CloudFormationCreateUpdateStackAction({
               actionName: 'Lambda_CFN_Deploy',
               templatePath: cdkBuildOutput.atPath('LambdaStack.template.json'),
               stackName: 'LambdaDeploymentStack',
