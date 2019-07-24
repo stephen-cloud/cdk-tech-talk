@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-// bin/pipeline.ts
-
 import { App } from '@aws-cdk/core';
 import { LambdaStack } from '../lib/lambda-stack';
 import { PipelineStack } from '../lib/pipeline-stack';

@@ -47,15 +47,16 @@ export class PipelineStack extends Stack {
           //     'npm install',
           //   ],
           // },
-          // build: {
-          //   commands: 'npm run build',
-          // },
+          build: {
+            // commands: 'npm run build',
+            commands: ['pwd', 'ls'],
+          },
         },
         artifacts: {
           'base-directory': 'lambda',
           files: [
             'index.js',
-            'node_modules/**/*',
+            // 'node_modules/**/*',
           ],
         },
       }),
