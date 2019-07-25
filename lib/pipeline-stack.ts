@@ -41,15 +41,15 @@ export class PipelineStack extends Stack {
       buildSpec: BuildSpec.fromObject({
         version: '0.2',
         phases: {
-          install: {
-            commands: [
-              'cd lambda',
-              'npm install',
-            ],
-          },
+          // install: {
+          //   commands: [
+          //     'cd lambda',
+          //     'npm install',
+          //   ],
+          // },
           build: {
             commands: [
-              'npm run build',
+              // 'npm run build',
               'pwd',
               'ls',
               'find .'
