@@ -48,18 +48,18 @@ export class PipelineStack extends Stack {
           //   ],
           // },
           // build: {
-            // commands: 'npm run build',
+          //   commands: 'npm run build',
           // },
         },
         artifacts: {
           'base-directory': 'lambda',
           files: [
-            'lambda.py',
+            'index.js',
           ],
         },
       }),
       environment: {
-        buildImage: LinuxBuildImage.UBUNTU_14_04_PYTHON_3_7_1,
+        buildImage: LinuxBuildImage.UBUNTU_14_04_NODEJS_8_11_0,
       },
     });
 

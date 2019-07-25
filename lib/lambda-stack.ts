@@ -1,9 +1,10 @@
-import codedeploy = require('@aws-cdk/aws-codedeploy');
 import lambda = require('@aws-cdk/aws-lambda');
 import { App, Stack, StackProps } from '@aws-cdk/core';
+import { CfnParametersCode } from '@aws-cdk/aws-lambda';
+import { LambdaDeploymentGroup, LambdaDeploymentConfig } from '@aws-cdk/aws-codedeploy';
 
 export class LambdaStack extends Stack {
-  public readonly lambdaCode: lambda.CfnParametersCode;
+  public readonly lambdaCode: CfnParametersCode;
 
   constructor(app: App, id: string, props?: StackProps) {
     super(app, id, props);
@@ -22,9 +23,9 @@ export class LambdaStack extends Stack {
       version,
     });
 
-    new codedeploy.LambdaDeploymentGroup(this, 'DeploymentGroup', {
+    new LambdaDeploymentGroup(this, 'DeploymentGroup', {
       alias,
-      deploymentConfig: codedeploy.LambdaDeploymentConfig.LINEAR_10PERCENT_EVERY_1MINUTE,
+      deploymentConfig: LambdaDeploymentConfig.LINEAR_10PERCENT_EVERY_1MINUTE,
     });
   }
 }
