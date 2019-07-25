@@ -29,7 +29,7 @@ export class PipelineStack extends Stack {
         artifacts: {
           'base-directory': 'dist',
           files: [
-            'LambdaStack.template.json',
+            'dev-techtalk-LambdaStack.template.json',
           ],
         },
       }),
@@ -41,15 +41,20 @@ export class PipelineStack extends Stack {
       buildSpec: BuildSpec.fromObject({
         version: '0.2',
         phases: {
-          // install: {
-          //   commands: [
-          //     'cd lambda',
-          //     'npm install',
-          //   ],
-          // },
-          // build: {
-          //   commands: 'npm run build',
-          // },
+          install: {
+            commands: [
+              'cd lambda',
+              'npm install',
+            ],
+          },
+          build: {
+            commands: [
+              'npm run build',
+              'pwd',
+              'ls',
+              'find .'
+            ]
+          },
         },
         artifacts: {
           'base-directory': 'lambda',
