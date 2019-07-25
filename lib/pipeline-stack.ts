@@ -105,7 +105,7 @@ export class PipelineStack extends Stack {
           actions: [
             new CloudFormationCreateUpdateStackAction({
               actionName: 'Lambda_CFN_Deploy',
-              templatePath: cdkBuildOutput.atPath('LambdaStack.template.json'),
+              templatePath: cdkBuildOutput.atPath('dev-techtalk-LambdaStack.template.json'),
               stackName: 'LambdaDeploymentStack',
               adminPermissions: true,
               parameterOverrides: {
